@@ -8,21 +8,27 @@
 
 int main(){
 	/* Variaveis para estabelecer a comunicacao */
-	int socket_con = 0;
+	int socket_con, novo_socket;
 	//socklen_t cliente_len;
-    struct sockaddr_in endereco_server;
-    socket_con = socket(AF_INET, SOCK_STREAM,0); 
-    memset(endereco_server.sin_zero, '\0', sizeof endereco_server.sin_zero);
-    bzero((char *)&endereco_server, sizeof(endereco_server));
-    endereco_server.sin_family = AF_INET;
-    endereco_server.sin_addr.s_addr = INADDR_ANY;
-    endereco_server.sin_port = htons(3000);
-    bind(socket_con, (struct sockaddr *) &endereco_server,sizeof(endereco_server));
+    struct sockaddr_in serverAddr, serverStorage;
+    socklen_t addr_size;
+
+    socket_con = socket(PF_INET, SOCK_STREAM, 0);
+
+    bzero((char *)&serverAddr, sizeof(serverAddr));    
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = htons(7891); 
+    memset(serverAddr.sin_zero, '\0', sizeof serverAddr.sin_zero);  
+    bind(socket_con, (struct sockaddr *) &serverAddr, sizeof(serverAddr));
+    
     if(listen(socket_con, 2) == 0){
         printf("Aguardando Jogadores!\n");
     }else{
         printf("Erro ao esperar jogadores!\n");
     }
+    addr_size = sizeof serverStorage;
+    novo_socket = accept(socket_con, (struct sockaddr *) &serverStorage, &addr_size);
+
     return 0;
 }
   
