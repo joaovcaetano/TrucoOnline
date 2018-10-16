@@ -41,28 +41,23 @@ int main() {
 	const char* data_to_send = "Bem Vindo a PUTARIA";
 	send(sock, data_to_send, strlen(data_to_send), 0);
 	char q[4];
-	
-	
-
 
 	// receive
 	
 	int n = 0;
 	int len = 0, maxlen = 100;
-	char buffer[maxlen];
-	char* pbuffer = buffer;
+	char buffer[100];
+	//char* pbuffer = buffer;
 
 	// will remain open until the server terminates the connection
-	while ((n = recv(sock, buffer, maxlen, 0)) > 0) {
-		//free(buffer);
+	while ((n = recv(sock, buffer, 100, 0)) > 0) {
 		scanf("%s", q);
 		send(sock, q, strlen(q), 0);
+		strcpy(buffer, q);
 		//pbuffer += n;
 		//maxlen -= n;
 		//len += n;
-
-		buffer[maxlen] = '\n';
-		printf("received: '%s'\n", buffer);
+		printf("recebido: '%s'\n", buffer);
 	}
 
 	// close the socket
