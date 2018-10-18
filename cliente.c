@@ -12,15 +12,10 @@ int main() {
 	memset(&server_address, 0, sizeof(server_address));
 	server_address.sin_family = AF_INET;
 
-	// creates binary representation of server name
-	// and stores it as sin_addr
-	// http://beej.us/guide/bgnet/output/html/multipage/inet_ntopman.html
 	inet_pton(AF_INET, server_name, &server_address.sin_addr);
 
-	// htons: port in network order format
 	server_address.sin_port = htons(server_port);
 
-	// open a stream socket
 	int sock;
 	if ((sock = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
 		printf("could not create socket\n");
@@ -43,7 +38,7 @@ int main() {
 	char q[4];
 
 	// receive
-	
+
 	int n = 0;
 	int len = 0, maxlen = 100;
 	char buffer[100];
