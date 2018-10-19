@@ -46,13 +46,10 @@ int main() {
 
 	// will remain open until the server terminates the connection
 	while ((n = recv(sock, buffer, 100, 0)) > 0) {
+		printf("recebido: %s\n", buffer);
 		scanf("%s", q);
 		send(sock, q, strlen(q), 0);
 		strcpy(buffer, q);
-		//pbuffer += n;
-		//maxlen -= n;
-		//len += n;
-		printf("recebido: '%s'\n", buffer);
 	}
 
 	// close the socket
