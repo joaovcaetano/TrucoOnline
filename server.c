@@ -13,61 +13,15 @@ typedef struct jogadores{
 }jogador;
 
 typedef struct baralho{
-	char nome[2];
+	char *nome;
 	int valor;
 }cartas;
 
-void embaralhar(cartas *baralho, jogador *clientes){
-	printf("alo");
-	int contador = 0;
-	int v[12];
-	char buffer[6];
-	while(contador < 12){
-		int r = (rand() % 40);
-		v[contador] = r;
-		contador = contador ++;
-	}
-	buffer[0] = baralho[v[1]].nome[0];
-	buffer[1] = baralho[v[1]].nome[1];
-	buffer[2] = baralho[v[2]].nome[0];
-	buffer[3] = baralho[v[2]].nome[1];
-	buffer[4] = baralho[v[3]].nome[0];
-	buffer[5] = baralho[v[3]].nome[1];
-	printf("oi\n");
-	printf("%s\n", buffer);
-	send(clientes[0].porta, buffer, strlen(buffer), 0);
+void criaBaralho(struct baralho *bara, struct jogadores *client);
 
-	buffer[0] = baralho[v[4]].nome[0];
-	buffer[1] = baralho[v[4]].nome[1];
-	buffer[2] = baralho[v[5]].nome[0];
-	buffer[3] = baralho[v[5]].nome[1];
-	buffer[4] = baralho[v[6]].nome[0];
-	buffer[5] = baralho[v[6]].nome[1];
-	printf("oi\n");
-	printf("%s\n", buffer);
-	send(clientes[1].porta, buffer, strlen(buffer), 0);
+void embaralhar(struct baralho *bara, struct jogadores *client);
 
-	buffer[0] = baralho[v[7]].nome[0];
-	buffer[1] = baralho[v[7]].nome[1];
-	buffer[2] = baralho[v[8]].nome[0];
-	buffer[3] = baralho[v[8]].nome[1];
-	buffer[4] = baralho[v[9]].nome[0];
-	buffer[5] = baralho[v[9]].nome[1];
-	printf("oi\n");
-	printf("%s\n", buffer);
-	send(clientes[2].porta, buffer, strlen(buffer), 0);
 
-	buffer[0] = baralho[v[10]].nome[0];
-	buffer[1] = baralho[v[10]].nome[1];
-	buffer[2] = baralho[v[11]].nome[0];
-	buffer[3] = baralho[v[11]].nome[1];
-	buffer[4] = baralho[v[12]].nome[0];
-	buffer[5] = baralho[v[12]].nome[1];
-	printf("oi\n");
-	printf("%s\n", buffer);
-	send(clientes[3].porta, buffer, strlen(buffer), 0);
-	return;
-}
 int main(int argc, char *argv[]) {
 	int SERVER_PORT = 3000;
 
@@ -105,139 +59,6 @@ int main(int argc, char *argv[]) {
 	int client_address_len = 0;
 	jogador clientes[4];
 	cartas baralho[40];
-	baralho[0].nome[0]='4';
-	baralho[0].nome[1]='p';
-	baralho[0].valor = 40;
-	baralho[1].nome[0]='7';
-	baralho[1].nome[1]='c';
-	baralho[1].valor = 39;
-	baralho[2].nome[0]='a';
-	baralho[2].nome[1]='e';
-	baralho[2].valor = 38;
-	baralho[3].nome[0]='7';
-	baralho[3].nome[1]='o';
-	baralho[3].valor = 37;
-
-	baralho[4].nome[0]='3';
-	baralho[4].nome[1]='p';
-	baralho[4].valor = 36;
-	baralho[5].nome[0]='3';
-	baralho[5].nome[1]='c';
-	baralho[5].valor = 36;
-	baralho[6].nome[0]='3';
-	baralho[6].nome[1]='e';
-	baralho[6].valor = 36;
-	baralho[7].nome[0]='3';
-	baralho[7].nome[1]='o';
-	baralho[7].valor = 36;
-
-	baralho[8].nome[0]='2';
-	baralho[8].nome[1]='p';
-	baralho[8].valor = 35;
-	baralho[9].nome[0]='2';
-	baralho[9].nome[1]='c';
-	baralho[9].valor = 35;
-	baralho[10].nome[0]='2';
-	baralho[10].nome[1]='e';
-	baralho[10].valor = 35;
-	baralho[11].nome[0]='2';
-	baralho[11].nome[1]='o';
-	baralho[11].valor = 35;
-
-
-	baralho[12].nome[0]='a';
-	baralho[12].nome[1]='c';
-	baralho[12].valor = 34;
-	baralho[13].nome[0]='a';
-	baralho[13].nome[1]='o';
-	baralho[13].valor = 34;
-	baralho[14].nome[0]='a';
-	baralho[14].nome[1]='p';
-	baralho[14].valor = 34;
-
-
-	baralho[15].nome[0]='k';
-	baralho[15].nome[1]='p';
-	baralho[15].valor = 33;
-	baralho[16].nome[0]='k';
-	baralho[16].nome[1]='c';
-	baralho[16].valor = 33;
-	baralho[17].nome[0]='k';
-	baralho[17].nome[1]='e';
-	baralho[17].valor = 33;
-	baralho[18].nome[0]='k';
-	baralho[18].nome[1]='o';
-	baralho[18].valor = 33;
-
-	baralho[19].nome[0]='j';
-	baralho[19].nome[1]='p';
-	baralho[19].valor = 32;
-	baralho[20].nome[0]='j';
-	baralho[20].nome[1]='c';
-	baralho[20].valor = 32;
-	baralho[21].nome[0]='j';
-	baralho[21].nome[1]='e';
-	baralho[21].valor = 32;
-	baralho[22].nome[0]='j';
-	baralho[22].nome[1]='o';
-	baralho[22].valor = 32;
-
-	baralho[23].nome[0]='q';
-	baralho[23].nome[1]='p';
-	baralho[23].valor = 31;
-	baralho[24].nome[0]='q';
-	baralho[24].nome[1]='c';
-	baralho[24].valor = 31;
-	baralho[25].nome[0]='q';
-	baralho[25].nome[1]='e';
-	baralho[25].valor = 31;
-	baralho[26].nome[0]='q';
-	baralho[26].nome[1]='o';
-	baralho[26].valor = 31;
-
-	baralho[27].nome[0]='7';
-	baralho[27].nome[1]='p';
-	baralho[27].valor = 30;
-	baralho[28].nome[0]='7';
-	baralho[28].nome[1]='e';
-	baralho[28].valor = 30;
-
-	baralho[29].nome[0]='6';
-	baralho[29].nome[1]='p';
-	baralho[29].valor = 29;
-	baralho[30].nome[0]='6';
-	baralho[30].nome[1]='c';
-	baralho[30].valor = 29;
-	baralho[31].nome[0]='6';
-	baralho[31].nome[1]='e';
-	baralho[31].valor = 29;
-	baralho[32].nome[0]='6';
-	baralho[32].nome[1]='o';
-	baralho[32].valor = 29;
-
-	baralho[33].nome[0]='5';
-	baralho[33].nome[1]='p';
-	baralho[33].valor = 28;
-	baralho[34].nome[0]='5';
-	baralho[34].nome[1]='c';
-	baralho[34].valor = 28;
-	baralho[35].nome[0]='5';
-	baralho[35].nome[1]='e';
-	baralho[35].valor = 28;
-	baralho[36].nome[0]='5';
-	baralho[36].nome[1]='o';
-	baralho[36].valor = 28;
-
-	baralho[37].nome[0]='4';
-	baralho[37].nome[1]='c';
-	baralho[37].valor = 27;
-	baralho[38].nome[0]='4';
-	baralho[38].nome[1]='e';
-	baralho[38].valor = 27;
-	baralho[39].nome[0]='4';
-	baralho[39].nome[1]='o';
-	baralho[39].valor = 27;
-
 	char buffer[100];
 	while (true) {
 		// open a new socket to transmit data per connection
@@ -256,7 +77,9 @@ int main(int argc, char *argv[]) {
 		send(clientes[1].porta, buffer, strlen(buffer), 0);
 		send(clientes[2].porta, buffer, strlen(buffer), 0);
 		send(clientes[3].porta, buffer, strlen(buffer), 0);
-		memset(buffer, 0, sizeof(buffer));
+		memset(&buffer, 0, sizeof(buffer));
+		printf("oi");
+		criaBaralho(baralho, clientes);
 		embaralhar(baralho, clientes);
 		printf("olar");
 		//char *pbuffer = buffer;
@@ -266,4 +89,84 @@ int main(int argc, char *argv[]) {
 	}
 	close(listen_sock);
 	return 0;
+}
+
+void criaBaralho(struct baralho *barai, struct jogadores *client ){
+	barai[0].nome = "4p"; barai[0].valor= 13;
+	barai[1].nome = "7c"; barai[1].valor= 12;
+	barai[2].nome = "ae"; barai[2].valor= 11;
+	barai[3].nome = "7o"; barai[3].valor= 10;
+	barai[4].nome = "3p"; barai[4].valor= 9;
+	barai[5].nome = "3c"; barai[5].valor= 9;
+	barai[6].nome = "3e"; barai[6].valor= 9;
+	barai[7].nome = "3o"; barai[7].valor= 9;
+	barai[8].nome = "2p"; barai[8].valor= 8;
+	barai[9].nome = "2c"; barai[9].valor= 8;
+	barai[10].nome = "2e"; barai[10].valor= 8;
+	barai[11].nome = "2c"; barai[11].valor= 8;
+	barai[12].nome = "ap"; barai[12].valor= 7;
+	barai[13].nome = "ac"; barai[13].valor= 7;
+	barai[14].nome = "ao"; barai[14].valor= 7;
+	barai[15].nome = "kp"; barai[15].valor= 6;
+	barai[16].nome = "kc"; barai[16].valor= 6;
+	barai[17].nome = "ke"; barai[17].valor= 6;
+	barai[18].nome = "ko"; barai[18].valor= 6;
+	barai[19].nome = "jp"; barai[19].valor= 5;
+	barai[20].nome = "jc"; barai[20].valor= 5;
+	barai[21].nome = "je"; barai[21].valor= 5;
+	barai[22].nome = "jo"; barai[22].valor= 5;
+	barai[23].nome = "qp"; barai[23].valor= 4;
+	barai[24].nome = "qc"; barai[24].valor= 4;
+	barai[25].nome = "qe"; barai[25].valor= 4;
+	barai[26].nome = "qo"; barai[26].valor= 4;
+	barai[27].nome = "7p"; barai[27].valor= 3;
+	barai[28].nome = "7e"; barai[28].valor= 3;
+	barai[29].nome = "6p"; barai[29].valor= 2;
+	barai[30].nome = "6c"; barai[30].valor= 2;
+	barai[31].nome = "6e"; barai[31].valor= 2;
+	barai[32].nome = "6o"; barai[32].valor= 2;
+	barai[33].nome = "5p"; barai[33].valor= 1;
+	barai[34].nome = "5c"; barai[34].valor= 1;
+	barai[35].nome = "5e"; barai[35].valor= 1;
+	barai[36].nome = "5o"; barai[36].valor= 1;
+	barai[37].nome = "4c"; barai[37].valor= 0;
+	barai[38].nome = "4e"; barai[38].valor= 0;
+	//barai[39].nome,="4o"); strcpy(barai[39].valor , 0);
+	barai[39].nome = "4o";
+	barai[39].valor = 0;
+	char *q;
+	q = "\noi";
+	send(client[0].porta, q, strlen(q), 0);
+}
+void embaralhar(struct baralho *bara, struct jogadores *client){
+	char *q;
+	q = "\nalo";
+	send(client[0].porta, q, strlen(q), 0);int contador = 0;
+	int v[12], j = 0;
+	char buffer[6];
+	while(contador < 12){
+		int r = (rand() % 40);
+		v[contador] = r;
+		contador = contador ++;
+	}
+	while(j < 12){
+		/*buffer[y] = bara[v[j]].nome[0];
+		y++;
+		buffer[y] = bara[v[j]].nome[1];
+		y++;*/
+		j++;
+		if(j == 2){
+			send(client[0].porta, buffer, strlen(buffer), 0);
+			memset(&buffer, 0, sizeof(buffer));
+		}else if(j == 5){
+			send(client[1].porta, buffer, strlen(buffer), 0);
+			memset(&buffer, 0, sizeof(buffer));
+		}else if(j == 8){
+			send(client[2].porta, buffer, strlen(buffer), 0);
+			memset(&buffer, 0, sizeof(buffer));
+		}else if(j == 11){
+			send(client[3].porta, buffer, strlen(buffer), 0);
+			memset(&buffer, 0, sizeof(buffer));
+		}
+	}
 }
