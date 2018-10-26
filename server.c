@@ -21,6 +21,9 @@ void criaBaralho(struct baralho *bara, struct jogadores *client);
 
 void embaralhar(struct baralho *bara, struct jogadores *client);
 
+void enviaMengagem(char *mensagem, struct jogadores *client);
+
+void broadcast(char *mensagem, struct jogadores *client);
 
 int main(int argc, char *argv[]) {
 	int SERVER_PORT = 3000;
@@ -38,17 +41,13 @@ int main(int argc, char *argv[]) {
 		printf("could not create listen socket\n");
 		return 1;
 	}
-
-	// bind it to listen to the incoming connections on the created server
-	// address, will return -1 on error
 	if ((bind(listen_sock, (struct sockaddr *)&server_address,
 	          sizeof(server_address))) < 0) {
 		printf("could not bind socket\n");
 		return 1;
 	}
 
-	int wait_size = 5;  // maximum number of waiting clients, after which
-	                     // dropping begins
+	int wait_size = 5;
 	if (listen(listen_sock, wait_size) < 0) {
 		printf("could not open socket for listening\n");
 		return 1;
@@ -56,33 +55,37 @@ int main(int argc, char *argv[]) {
 
 	// socket address used to store client address
 	struct sockaddr_in client_address;
-	int client_address_len = 0;
+	int client_address_len = 0, placar_A = 0, placar_B = 0;
 	jogador clientes[4];
 	cartas baralho[40];
-	char buffer[100];
+	char buffer[100], *mesa, *mensagem;
+	memset(buffer, 0 , sizeof(buffer));
 	while (true) {
 		// open a new socket to transmit data per connection
 		int i;
 		for(i=0; i<4; i++){
 			clientes[i].porta = accept(listen_sock, (struct sockaddr *)&client_address,&client_address_len);
 			clientes[i].id = i;
+			strcpy(buffer, "Conectou");
 			send(clientes[i].porta, buffer, strlen(buffer), 0);
 			memset(buffer, 0 , sizeof(buffer));
 		}
 		char q[20];
-		printf("Todo mundo conectado");
 		strcpy(q, "Todo mundo conectado");
 		strcpy(buffer, q);
 		send(clientes[0].porta, buffer, strlen(buffer), 0);
 		send(clientes[1].porta, buffer, strlen(buffer), 0);
 		send(clientes[2].porta, buffer, strlen(buffer), 0);
 		send(clientes[3].porta, buffer, strlen(buffer), 0);
-		memset(&buffer, 0, sizeof(buffer));
-		printf("oi");
+		memset(buffer, 0, sizeof(buffer));
 		criaBaralho(baralho, clientes);
 		embaralhar(baralho, clientes);
-		printf("olar");
-		//char *pbuffer = buffer;
+		while ((n = recv(clientes[0].porta, buffer, 100, 0)) > 0){
+			mesa[0] = buffer;
+			mensagem = "\n";
+			strcat(mensagem, "O %d Jogou a carta %s\n", clientes[0].id, buffer);
+			broadcast(&mensagem);
+		}
 
 		printf("client connected with ip address: %s\n",
 		       inet_ntoa(client_address.sin_addr));
@@ -92,6 +95,9 @@ int main(int argc, char *argv[]) {
 }
 
 void criaBaralho(struct baralho *barai, struct jogadores *client ){
+	char *q;
+	q = "\noi";
+	send(client[0].porta, q, strlen(q), 0);
 	barai[0].nome = "4p"; barai[0].valor= 13;
 	barai[1].nome = "7c"; barai[1].valor= 12;
 	barai[2].nome = "ae"; barai[2].valor= 11;
@@ -134,39 +140,44 @@ void criaBaralho(struct baralho *barai, struct jogadores *client ){
 	//barai[39].nome,="4o"); strcpy(barai[39].valor , 0);
 	barai[39].nome = "4o";
 	barai[39].valor = 0;
-	char *q;
-	q = "\noi";
-	send(client[0].porta, q, strlen(q), 0);
+}
+void enviaMengagem(char *mensagem, struct jogadores *client){
+	send(client.porta, mensagem, strlen(&mensagem), 0);
+	memset(mensagem, 0, sizeof(mensagem));
 }
 void embaralhar(struct baralho *bara, struct jogadores *client){
 	char *q;
 	q = "\nalo";
-	send(client[0].porta, q, strlen(q), 0);int contador = 0;
-	int v[12], j = 0;
+	send(client[0].porta, q, strlen(q), 0);
+	int contador = 0;
+	int v[12], i = 0, y = 0, j = 0;
 	char buffer[6];
 	while(contador < 12){
 		int r = (rand() % 40);
 		v[contador] = r;
 		contador = contador ++;
 	}
-	while(j < 12){
-		/*buffer[y] = bara[v[j]].nome[0];
-		y++;
-		buffer[y] = bara[v[j]].nome[1];
-		y++;*/
-		j++;
-		if(j == 2){
-			send(client[0].porta, buffer, strlen(buffer), 0);
-			memset(&buffer, 0, sizeof(buffer));
-		}else if(j == 5){
-			send(client[1].porta, buffer, strlen(buffer), 0);
-			memset(&buffer, 0, sizeof(buffer));
-		}else if(j == 8){
-			send(client[2].porta, buffer, strlen(buffer), 0);
-			memset(&buffer, 0, sizeof(buffer));
-		}else if(j == 11){
-			send(client[3].porta, buffer, strlen(buffer), 0);
-			memset(&buffer, 0, sizeof(buffer));
+	while(j<12){
+		if(j<3){
+			strcat(client[0].mao, bara[v[j]]);
+		}else if(j >= 3 && j < 6){
+			strcat(client[1].mao, bara[v[j]]);
+		}else if(j >= 6 && j < 9){
+			strcat(client[2].mao, bara[v[j]]);
+		}else{
+			strcat(client[3].mao, bara[v[j]]);
 		}
+		j++;
+	}
+	enviaMengagem(&client[0].mao, client[0]);
+	enviaMengagem(&client[1].mao, client[1]);
+	enviaMengagem(&client[2].mao, client[2]);
+	enviaMengagem(&client[3].mao, client[3]);
+}
+
+void broadcast(*mensagem, struct jogadores *client){
+	int i;
+	for (i = 0; i<4; i++){
+		send(client[i], &mensagem, 0, strlen(&mensagem), 0);	
 	}
 }
