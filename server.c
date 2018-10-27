@@ -7,7 +7,7 @@
 
 typedef struct jogadores{
 	int porta;
-	char mao[3];
+	char *mao;
 	char equipe[1];
 	int id;
 }jogador;
@@ -21,9 +21,15 @@ void criaBaralho(struct baralho *bara, struct jogadores *client);
 
 void embaralhar(struct baralho *bara, struct jogadores *client);
 
-void enviaMengagem(char *mensagem, struct jogadores *client);
+void enviaMengagem(char *mensagem, struct jogadores client);
 
 void broadcast(char *mensagem, struct jogadores *client);
+
+void atualizaMesa(char *mesa, char carta, int id);
+
+void jogarCarta(char *mesa, struct jogadores *client, int vez);
+
+int pegaValorCarta(char *mesa, struct baralho *bara, int posicao);
 
 int main(int argc, char *argv[]) {
 	int SERVER_PORT = 3000;
@@ -55,10 +61,10 @@ int main(int argc, char *argv[]) {
 
 	// socket address used to store client address
 	struct sockaddr_in client_address;
-	int client_address_len = 0, placar_A = 0, placar_B = 0;
+	int client_address_len = 0, placar_A = 0, placar_B = 0, n, id = 0, jogada = 0, vez = 0;
 	jogador clientes[4];
 	cartas baralho[40];
-	char buffer[100], *mesa, *mensagem;
+	char buffer[100], mesa[7], *mensagem;
 	memset(buffer, 0 , sizeof(buffer));
 	while (true) {
 		// open a new socket to transmit data per connection
@@ -80,12 +86,26 @@ int main(int argc, char *argv[]) {
 		memset(buffer, 0, sizeof(buffer));
 		criaBaralho(baralho, clientes);
 		embaralhar(baralho, clientes);
-		while ((n = recv(clientes[0].porta, buffer, 100, 0)) > 0){
-			mesa[0] = buffer;
-			mensagem = "\n";
-			strcat(mensagem, "O %d Jogou a carta %s\n", clientes[0].id, buffer);
-			broadcast(&mensagem);
+		jogarCarta(mesa, clientes, vez);
+		broadcast(mesa, clientes);
+		jogada++;
+		if(vez == 3){
+			vez = 0;
+		}else{
+			vez++;
 		}
+		if(jogada == 4){
+			int j, aux, maior, k, vencedor;
+			char *nome_carta;
+			maior = pegaValorCarta(mesa, baralho, 1);
+			nome_carta[0] = mesa[1];
+			nome_carta[1] = mesa[2];
+			vencedor = 1;
+			for(j=2; j<6; j++){
+				aux = pegaValorCarta(mesa, baralho, j); 
+			}	
+		}
+		
 
 		printf("client connected with ip address: %s\n",
 		       inet_ntoa(client_address.sin_addr));
@@ -141,8 +161,8 @@ void criaBaralho(struct baralho *barai, struct jogadores *client ){
 	barai[39].nome = "4o";
 	barai[39].valor = 0;
 }
-void enviaMengagem(char *mensagem, struct jogadores *client){
-	send(client.porta, mensagem, strlen(&mensagem), 0);
+void enviaMengagem(char *mensagem, struct jogadores client){
+	send(client.porta, mensagem, strlen(mensagem), 0);
 	memset(mensagem, 0, sizeof(mensagem));
 }
 void embaralhar(struct baralho *bara, struct jogadores *client){
@@ -159,25 +179,61 @@ void embaralhar(struct baralho *bara, struct jogadores *client){
 	}
 	while(j<12){
 		if(j<3){
-			strcat(client[0].mao, bara[v[j]]);
+			strcat(client[0].mao, bara[v[j]].nome);
 		}else if(j >= 3 && j < 6){
-			strcat(client[1].mao, bara[v[j]]);
+			strcat(client[1].mao, bara[v[j]].nome);
 		}else if(j >= 6 && j < 9){
-			strcat(client[2].mao, bara[v[j]]);
+			strcat(client[2].mao, bara[v[j]].nome);
 		}else{
-			strcat(client[3].mao, bara[v[j]]);
+			strcat(client[3].mao, bara[v[j]].nome);
 		}
 		j++;
 	}
-	enviaMengagem(&client[0].mao, client[0]);
-	enviaMengagem(&client[1].mao, client[1]);
-	enviaMengagem(&client[2].mao, client[2]);
-	enviaMengagem(&client[3].mao, client[3]);
+	enviaMengagem(client[0].mao, client[0]);
+	enviaMengagem(client[1].mao, client[1]);
+	enviaMengagem(client[2].mao, client[2]);
+	enviaMengagem(client[3].mao, client[3]);
 }
 
-void broadcast(*mensagem, struct jogadores *client){
+void broadcast(char *mensagem, struct jogadores *client){
 	int i;
 	for (i = 0; i<4; i++){
-		send(client[i], &mensagem, 0, strlen(&mensagem), 0);	
+		send(client[i].porta, mensagem, strlen(mensagem), 0);	
 	}
+}
+void atualizaMesa(char *mesa, char carta, int id){
+	mesa[0] = id;
+	strcat(mesa, carta);
+}
+
+void jogarCarta(char *mesa, struct jogadores *client, int vez){
+	int n, id;
+	char *mensagem, buffer[100];
+	while ((n = recv(client[vez].porta, buffer, 100, 0)) > 0){
+		mensagem = "\n";
+		id = client[vez].id;
+		strcat(mensagem, "O ");
+		mensagem[3] = id;
+		strcat(mensagem, "Jogou a carta ");
+		strcat(mensagem, buffer);
+		strcat(mensagem, "\n");
+		broadcast(mensagem, client);
+		atualizaMesa(mesa, buffer, id);
+		memset(mensagem, 0, sizeof(mensagem));
+		memset(buffer, 0, sizeof(buffer));
+		break;
+	}
+}
+
+int pegaValorCarta(char *mesa, struct baralho *bara, int posicao){
+	int k, maior;
+	char *nome;
+	nome[1] = mesa[posicao];
+	nome[2] = mesa[posicao+1];
+	for(k=0; k<40; k++){
+		if(nome == bara[k].nome){
+			maior = bara[k].valor;
+		}
+	}
+	return maior;
 }
