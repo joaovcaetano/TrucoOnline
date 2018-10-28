@@ -77,36 +77,40 @@ int main(int argc, char *argv[]) {
 		send(clientes[3].porta, buffer, strlen(buffer), 0);
 		memset(buffer, 0, sizeof(buffer));
 		criaBaralho(baralho, clientes);
-		embaralhar(baralho, clientes);
-		for(i=0; i<3; i++){
-			vencedor_turno[i] = vencedorTurno(mesa, clientes, vez, baralho);
-			if(clientes[vencedor_turno[i]].equipe[0] == 'a'){
-				conta++;
-			}else{
-				contb++;
-			}
-			if((i==2)){
-				if(conta==2){
-					placar_A++;
-					flag=1;
-				}else if(contb == 2){
-					placar_B++;
-					flag=1;
+		while(placar_A < 12 || placar_B<12){
+			embaralhar(baralho, clientes);
+			for(i=0; i<3; i++){
+				vencedor_turno[i] = vencedorTurno(mesa, clientes, vez, baralho);
+				if(clientes[vencedor_turno[i]].equipe[0] == 'a'){
+					conta++;
+				}else{
+					contb++;
 				}
+				if((i==2)){
+					if(conta==2){
+						placar_A++;
+						flag=1;
+					}else if(contb == 2){
+						placar_B++;
+						flag=1;
+					}
+				}	
 			}
-				
+			if(flag==1){
+				mensagem[0] = vencedor_turno[1];
+				strcat(mensagem, "Venceu o turno\n\0");
+				broadcast(mensagem, clientes);
+				vez = vencedor_turno[1];
+			}else{
+				mensagem[0] = vencedor_turno[2];
+				strcat(mensagem, "Venceu o turno\n\0");
+				broadcast(mensagem, clientes);
+				vez = vencedor_turno[2];
+			}
+			conta = 0;
+			contb = 0;	
 		}
-		if(flag==1){
-			mensagem[0] = vencedor_turno[1];
-			strcat(mensagem, "Venceu o turno\n\0");
-			broadcast(mensagem, clientes);
-			vez = vencedor_turno[1];
-		}else{
-			mensagem[0] = vencedor_turno[2];
-			strcat(mensagem, "Venceu o turno\n\0");
-			broadcast(mensagem, clientes);
-			vez = vencedor_turno[2];
-		}
+		
 		printf("client connected with ip address: %s\n",
 		       inet_ntoa(client_address.sin_addr));
 	}
