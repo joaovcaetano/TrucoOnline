@@ -31,17 +31,15 @@ void jogarCarta(char *mesa, struct jogadores *client, int vez);
 
 int pegaValorCarta(char *mesa, struct baralho *bara, int posicao);
 
+int vencedorTurno(char *mesa, struct jogadores *client, int vez, struct baralho *bara);
+
 int main(int argc, char *argv[]) {
 	int SERVER_PORT = 3000;
-
 	struct sockaddr_in server_address;
 	memset(&server_address, 0, sizeof(server_address));
 	server_address.sin_family = AF_INET;
-
 	server_address.sin_port = htons(SERVER_PORT);
-
 	server_address.sin_addr.s_addr = htonl(INADDR_ANY);
-
 	int listen_sock;
 	if ((listen_sock = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
 		printf("could not create listen socket\n");
@@ -52,23 +50,17 @@ int main(int argc, char *argv[]) {
 		printf("could not bind socket\n");
 		return 1;
 	}
-
 	int wait_size = 5;
-	if (listen(listen_sock, wait_size) < 0) {
-		printf("could not open socket for listening\n");
-		return 1;
-	}
-
-	// socket address used to store client address
+	listen(listen_sock, wait_size);
 	struct sockaddr_in client_address;
 	int client_address_len = 0, placar_A = 0, placar_B = 0, n, id = 0, jogada = 0, vez = 0;
 	jogador clientes[4];
 	cartas baralho[40];
-	char buffer[100], mesa[7], *mensagem;
+	char buffer[100], mesa[9], *mensagem, vencedor_turno[3];
 	memset(buffer, 0 , sizeof(buffer));
 	while (true) {
 		// open a new socket to transmit data per connection
-		int i;
+		int i, flag, conta = 0, contb = 0;
 		for(i=0; i<4; i++){
 			clientes[i].porta = accept(listen_sock, (struct sockaddr *)&client_address,&client_address_len);
 			clientes[i].id = i;
@@ -86,27 +78,35 @@ int main(int argc, char *argv[]) {
 		memset(buffer, 0, sizeof(buffer));
 		criaBaralho(baralho, clientes);
 		embaralhar(baralho, clientes);
-		jogarCarta(mesa, clientes, vez);
-		broadcast(mesa, clientes);
-		jogada++;
-		if(vez == 3){
-			vez = 0;
+		for(i=0; i<3; i++){
+			vencedor_turno[i] = vencedorTurno(mesa, clientes, vez, baralho);
+			if(clientes[vencedor_turno[i]].equipe[0] == 'a'){
+				conta++;
+			}else{
+				contb++;
+			}
+			if((i==2)){
+				if(conta==2){
+					placar_A++;
+					flag=1;
+				}else if(contb == 2){
+					placar_B++;
+					flag=1;
+				}
+			}
+				
+		}
+		if(flag==1){
+			mensagem[0] = vencedor_turno[1];
+			strcat(mensagem, "Venceu o turno\n\0");
+			broadcast(mensagem, clientes);
+			vez = vencedor_turno[1];
 		}else{
-			vez++;
+			mensagem[0] = vencedor_turno[2];
+			strcat(mensagem, "Venceu o turno\n\0");
+			broadcast(mensagem, clientes);
+			vez = vencedor_turno[2];
 		}
-		if(jogada == 4){
-			int j, aux, maior, k, vencedor;
-			char *nome_carta;
-			maior = pegaValorCarta(mesa, baralho, 1);
-			nome_carta[0] = mesa[1];
-			nome_carta[1] = mesa[2];
-			vencedor = 1;
-			for(j=2; j<6; j++){
-				aux = pegaValorCarta(mesa, baralho, j); 
-			}	
-		}
-		
-
 		printf("client connected with ip address: %s\n",
 		       inet_ntoa(client_address.sin_addr));
 	}
@@ -172,11 +172,17 @@ void embaralhar(struct baralho *bara, struct jogadores *client){
 	int contador = 0;
 	int v[12], i = 0, y = 0, j = 0;
 	char buffer[6];
-	while(contador < 12){
-		int r = (rand() % 40);
-		v[contador] = r;
-		contador = contador ++;
+	srand(time(NULL));
+	for(contador = 0; contador < 12; contador++){
+        v[i] = rand()%40;        
+        for(j = 0; j < contador; j++){
+            if(v[j] == v[i]){
+                v[i] = rand()%40;
+                j = 0;
+            }
+        }
 	}
+	j = 0;
 	while(j<12){
 		if(j<3){
 			strcat(client[0].mao, bara[v[j]].nome);
@@ -236,4 +242,43 @@ int pegaValorCarta(char *mesa, struct baralho *bara, int posicao){
 		}
 	}
 	return maior;
+}
+
+int vencedorTurno(char *mesa, struct jogadores *client, int vez, struct baralho *bara){
+	char ordem_jogada[4], valores[4];
+	int i, aux1, aux2, id1, id2, id_vencedor;
+	for(i=0; i<4; i++){
+		ordem_jogada[i] = vez;
+		jogarCarta(mesa, client, vez);
+		broadcast(mesa, client);
+		if(vez == 3){
+			vez = 0;
+		}else{
+			vez++;
+		}	
+	}
+	valores[0] = pegaValorCarta(mesa, bara, 1);
+	valores[1] = pegaValorCarta(mesa, bara, 3);
+	valores[2] = pegaValorCarta(mesa, bara, 5);
+	valores[3] = pegaValorCarta(mesa, bara, 7);
+	if(valores[0] > valores[1]){
+		aux1 = valores[0];
+		id1 = ordem_jogada[0];
+	}else{
+		aux1 = valores[1];
+		id1 = ordem_jogada[1];
+	}
+	if(valores[2] > valores[3]){
+		aux2 = valores[2];
+		id2 = ordem_jogada[2];
+	}else{
+		aux2 = valores[3];
+		id2 = ordem_jogada[3];
+	}
+	if(aux1>aux2){
+		id_vencedor=id1;
+	}else{
+		id_vencedor=id2;
+	}
+	return id_vencedor;
 }
